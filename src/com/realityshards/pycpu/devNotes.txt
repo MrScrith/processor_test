@@ -1,0 +1,96 @@
+CPU has 2 roms and 2 Rams, os rom/ram, user rom/ram
+
+ALU operations are non-destructive, source and destination are preserved and result of ALU operation is placed in
+the ALU Output Register
+
+The size of User ROM and RAM is based on the item used by the user and inserted in the block
+
+If stack exceeds memory size or user attempts to write to a ROM address that is outside of their ROM space the CPU will
+halt with a "MEMORY ERROR" (Light on model/GUI)
+
+OS ROM is a user item (so other mods can create their own ROMs)
+User code cannot write to OS RAM or ROM (action will simply not happen)
+
+Firmware sets base address of peripherals on startup, which is based on cable position TODO FIGURE THIS OUT
+
+
+64k Address space:
+OS ROM is 4k
+OS RAM is 4k
+Peripheral space is 8K
+User ROM is 16k, 1k to 16k can be utilized (based on item)
+User RAM is 32k, 1k to 32k can be utilized (based on item)
+
+
+
+IIII SSSS DDDT JJJP
+
+IIII == 4 bits of instruction bits, allows for 16 instructions
+P == positive/negative modifier for instructions
+DDD  Destination
+SSSS Source
+JJJ Jump instruction
+T == Signed/Unsigned operation
+
+IIII - P |
+0000 - 1 | Set Dest to Source
+0000 - 0 | Set Dest to 0
+0001 - 1 | Set Dest to 1
+0001 - 0 | Set Dest to -1
+0010 - 1 | Increment Source and set to ALU Out register
+0010 - 0 | Decrement Source and set to ALU Out register
+0011 - 1 | Add Source to Dest and set to ALU Out register
+0011 - 0 | Subtract Source to Dest and set to ALU Out register
+0100 - 1 | Multiply Source with Dest and set to ALU Out register
+0100 - 0 | Divide Source with Dest and set to ALU Out register
+0101 - 1 | AND Source with Dest and set to ALU Out register
+0101 - 0 | OR Source with Dest and set to ALU Out register
+0110 - 1 | NOT Source with Dest and set to ALU Out register
+0110 - 0 | Negate Source with Dest and set to ALU Out register
+0111 - 1 | bit shift Source Left (<<) and set to ALU Out register
+0111 - 0 | bit shift Source Right (>>) and set to ALU Out register
+1000 - 1 | Set Destination to value in next 2 bytes
+1001 - 1 | Move Stack Pointer to Next location
+1001 - 0 | Move Stack Pointer to Previous Location
+1111 - 1 | Set Dest to Source (admin mode, able to write to OS RAM or ROM) Will be removed
+
+JJJ |
+000 | No Jump
+001 | If Comp > 0 jump
+010 | If Comp = 0 jump
+011 | If Comp >= 0 jump
+100 | if comp < 0 jump
+101 | if comp != 0 jump
+110 | if com <= 0 jump
+111 | jump
+
+NOTE: Read only registers are only available on the Source list, so they all require the 4th bit to access
+SSSS - R  |
+ DDD - RW |
+0000 - RW | Jump Register (if jump instruction set this is the address to jump to).
+0001 - RW | Memory Address Register
+0010 - RW | Memory Data Register (value to write to or read from memory)
+0011 - RW | General Purpose registers
+0100 - RW | GP
+0101 - RW | GP
+0110 - RW | GP
+0111 - RW | General Purpose registers
+1000 - R  | Instruction Register
+1001 - R  | PC
+1010 - R  | Stack Register
+1011 - R  | ALU Output Register (Holds copy of last ALU operation result)
+
+1100
+1101
+1110
+
+
+1111 - R  | Flags register
+
+Flags:
+0000 0000 0000 NZBC
+
+C = Carry bit, set to 1 if an add operation produces a carry
+B = Borrow bit, set to 1 if a subtraction operation produced a borrow
+Z = Zero bit, set to 1 if result of operation is 0
+N = Negative bit, set to 1 if result is
