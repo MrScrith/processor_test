@@ -2,7 +2,9 @@ package com.realityshards.pycpu.interfaces;
 
 public interface i_pybus {
 
-    short baseAddress();
+    int getSize ();
+
+    short getBaseAddress();
 
     short read_mem(short address);
 

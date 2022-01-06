@@ -2,8 +2,11 @@ package com.realityshards.pycpu;
 
 
 import com.realityshards.pycpu.interfaces.i_pybus;
+import com.sun.istack.internal.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class pycpu {
     // Definition of instructions
@@ -63,7 +66,7 @@ public class pycpu {
     private i_pybus mainRom;
     private i_pybus userRam;
     private i_pybus mainRam;
-    private i_pybus[] peripherals;
+    private ArrayList<i_pybus> peripherals = new ArrayList<i_pybus>();
 
     private short RegJump;    // Jump Register (if jump instruction set this is the address to jump to).
     private short RegMemAdd;  // Memory Address Register
@@ -75,13 +78,19 @@ public class pycpu {
     private short RegFlags;   // Flags Register
     private short[] RegGp = new short[5];    // 5 General Purpose Registers.
 
-    public pycpu(i_pybus uRom, i_pybus mRom, i_pybus uRam,  i_pybus[] periphs)
+    public pycpu(i_pybus uRom, i_pybus mRom, i_pybus uRam, @Nullable i_pybus[] periphs)
     {
         userRom = uRom;
         mainRom = mRom;
         userRam = uRam;
-        peripherals = periphs.clone();
+        mainRam = new RamBlock((short)0x8000, 0x1000);
+        if ( periphs != null )
+        {
+            Collections.addAll(peripherals,periphs);
+        }
     }
+
+
 
     public boolean init()
     {
@@ -104,8 +113,8 @@ public class pycpu {
                 0x4000 - 0x7FFF : User ROM is 16k, 1k to 16k can be utilized (based on item)
                 0x8000 - 0xFFFF : User RAM is 32k, 1k to 32k can be utilized (based on item)
          */
-        mainRom.init((short)0x1000);
-        mainRam.init((short)0x2000);
+        mainRom.init((short)0x0000);
+        //mainRam.init((short)0x2000);
         if ( userRom != null)
         {
             userRom.init((short)0x4000);
@@ -125,6 +134,9 @@ public class pycpu {
             RegFlags |= FLAG_ERROR_BIT;
             retVal = false;
         }
+
+
+        loadNextInstruction(false);
 
         return retVal;
     }
@@ -158,16 +170,16 @@ public class pycpu {
         return retVal;
     }
 
-    // TODO addPeripheral function
     public boolean addPeripheral(i_pybus periph)
     {
-        return false;
+        return peripherals.add(periph);
     }
 
-    // TODO removePeripheral function
     public boolean removePeripheral(int periphIndex)
     {
-        return false;
+        i_pybus item = peripherals.remove(periphIndex);
+
+        return (item != null);
     }
 
     private boolean executeInstruction()
@@ -366,7 +378,6 @@ public class pycpu {
                 }
 
                 RegALU = (short)tmpVal;
-
             }
             else
             {
@@ -733,5 +744,20 @@ public class pycpu {
             RegFlags |= (FLAG_RESET_BIT | FLAG_ERROR_BIT);
             RegInst = mainRom.read_mem(RegPC);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "pycpu{" +
+                "RegJump=" + RegJump +
+                ", RegMemAdd=" + RegMemAdd +
+                ", RegMemData=" + RegMemData +
+                ", RegInst=" + RegInst +
+                ", RegPC=" + RegPC +
+                ", RegStack=" + RegStack +
+                ", RegALU=" + RegALU +
+                ", RegFlags=" + RegFlags +
+                ", RegGp=" + Arrays.toString(RegGp) +
+                '}';
     }
 }
