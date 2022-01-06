@@ -357,7 +357,7 @@ public class pycpu {
                 }
                 else if ( tmpVal < Short.MIN_VALUE )
                 {
-                    RegALU = Short.MAX_VALUE;
+                    tmpVal = Short.MAX_VALUE;
                     RegFlags |= FLAG_BORROW_BIT;
                 }
                 else if ( tmpVal < 0 )
