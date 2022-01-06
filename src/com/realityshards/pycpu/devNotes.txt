@@ -13,13 +13,14 @@ User code cannot write to OS RAM or ROM (action will simply not happen)
 
 Firmware sets base address of peripherals on startup, which is based on cable position TODO FIGURE THIS OUT
 
+Flags register is 'clear on read', it is also cleared at the start of an ALU operation for the last 4 bits.
 
 64k Address space:
-OS ROM is 4k
-OS RAM is 4k
-Peripheral space is 8K
-User ROM is 16k, 1k to 16k can be utilized (based on item)
-User RAM is 32k, 1k to 32k can be utilized (based on item)
+0x0000 - 0x0FFF : OS ROM is 4k
+0x1000 - 0x1FFF : OS RAM is 4k
+0x2000 - 0x3FFF : Peripheral space is 8K
+0x4000 - 0x7FFF : User ROM is 16k, 1k to 16k can be utilized (based on item)
+0x8000 - 0xFFFF : User RAM is 32k, 1k to 32k can be utilized (based on item)
 
 
 
@@ -52,7 +53,6 @@ IIII - P |
 1000 - 1 | Set Destination to value in next 2 bytes
 1001 - 1 | Move Stack Pointer to Next location
 1001 - 0 | Move Stack Pointer to Previous Location
-1111 - 1 | Set Dest to Source (admin mode, able to write to OS RAM or ROM) Will be removed
 
 JJJ |
 000 | No Jump
@@ -60,8 +60,8 @@ JJJ |
 010 | If Comp = 0 jump
 011 | If Comp >= 0 jump
 100 | if comp < 0 jump
-101 | if comp != 0 jump
-110 | if com <= 0 jump
+101 | if comp <= 0 jump
+110 | if comp != 0 jump
 111 | jump
 
 NOTE: Read only registers are only available on the Source list, so they all require the 4th bit to access
@@ -88,9 +88,11 @@ SSSS - R  |
 1111 - R  | Flags register
 
 Flags:
-0000 0000 0000 NZBC
+RE00 0000 0000 NZBC
 
 C = Carry bit, set to 1 if an add operation produces a carry
 B = Borrow bit, set to 1 if a subtraction operation produced a borrow
 Z = Zero bit, set to 1 if result of operation is 0
-N = Negative bit, set to 1 if result is
+N = Negative bit, set to 1 if result is negative
+R = Reset bit, set if a warm-reset happened.
+E = Error bit, set if there was an error condition that caused the reset.

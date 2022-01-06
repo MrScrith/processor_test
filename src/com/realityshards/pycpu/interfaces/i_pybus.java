@@ -2,11 +2,11 @@ package com.realityshards.pycpu.interfaces;
 
 public interface i_pybus {
 
-    int baseAddress();
+    short baseAddress();
 
-    int read_mem(int address);
+    short read_mem(short address);
 
-    boolean write_mem(int address, int value);
+    boolean write_mem(short address, short value);
 
-    boolean init(int baseAddress);
+    boolean init(short baseAddress);
 }
