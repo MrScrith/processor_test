@@ -71,8 +71,8 @@ public class OsROM implements i_pybus {
                     // if we read less than 2 bytes than the dat file is corrupted.
                     break;
                 }
-                short v1 = (short) (0x00FF & buff[0]);
-                short v2 = (short) (0x00FF & buff[1]);
+                short v1 = (short) (0x00FF & buff[1]);
+                short v2 = (short) (0x00FF & buff[0]);
                 short rval = (short) (( Short.toUnsignedInt(v1) << 8 ) | Short.toUnsignedInt(v2));
                 RomData[offset] = rval;
                 offset++;

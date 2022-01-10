@@ -37,7 +37,7 @@ IIII - P |
 0000 - 1 | Set Dest to Source
 0000 - 0 | Set Dest to 0
 0001 - 1 | Set Dest to 1
-0001 - 0 | Set Dest to -1
+0001 - 0 | Set Dest to -1 (signed value)
 0010 - 1 | Increment Source and set to ALU Out register
 0010 - 0 | Decrement Source and set to ALU Out register
 0011 - 1 | Add Source to Dest and set to ALU Out register

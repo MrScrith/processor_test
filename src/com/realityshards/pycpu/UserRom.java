@@ -12,6 +12,7 @@ public class UserRom implements i_pybus
     private final short[] RomData;
     private final String Name;
 
+
     public UserRom (short baseAddress, int size, String name)
     {
         BaseAddress = baseAddress;
@@ -84,8 +85,9 @@ public class UserRom implements i_pybus
                         break;
                     }
                     retVal = true;
-                    short v1 = (short) (0x00FF & buff[0]);
-                    short v2 = (short) (0x00FF & buff[1]);
+                    // Little endian, so value 0x1234 is stored 3412
+                    short v1 = (short) (0x00FF & buff[1]);
+                    short v2 = (short) (0x00FF & buff[0]);
                     short rval = (short) ((Short.toUnsignedInt(v1) << 8) | Short.toUnsignedInt(v2));
                     RomData[offset] = rval;
                     offset++;

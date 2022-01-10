@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
-public class pycpu {
+public class PyCPU
+{
     // Definition of instructions
     private static final byte INST_COPY = 0x0;
     private static final byte INST_SET = 0x1;
@@ -78,7 +79,7 @@ public class pycpu {
     private short RegFlags;   // Flags Register
     private short[] RegGp = new short[5];    // 5 General Purpose Registers.
 
-    public pycpu(i_pybus uRom, i_pybus mRom, i_pybus uRam, @Nullable i_pybus[] periphs)
+    public PyCPU (i_pybus uRom, i_pybus mRom, i_pybus uRam, @Nullable i_pybus[] periphs)
     {
         userRom = uRom;
         mainRom = mRom;
@@ -134,7 +135,6 @@ public class pycpu {
             RegFlags |= FLAG_ERROR_BIT;
             retVal = false;
         }
-
 
         loadNextInstruction(false);
 
@@ -304,15 +304,8 @@ public class pycpu {
         }
         else
         {
-            if ( signed )
-            {
-                write_to_reg(dest, (short)-1);
-                RegFlags |= FLAG_NEGATIVE_BIT;
-            }
-            else
-            {
-                write_to_reg(dest, (short)1); // not much you can do to write a negative number to an unsigned value
-            }
+            write_to_reg(dest, (short)-1);
+            RegFlags |= FLAG_NEGATIVE_BIT;
         }
     }
 

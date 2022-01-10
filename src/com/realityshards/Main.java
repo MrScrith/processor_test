@@ -3,7 +3,7 @@ package com.realityshards;
 import com.realityshards.pycpu.OsROM;
 import com.realityshards.pycpu.RamBlock;
 import com.realityshards.pycpu.UserRom;
-import com.realityshards.pycpu.pycpu;
+import com.realityshards.pycpu.PyCPU;
 
 public class Main {
 
@@ -16,7 +16,7 @@ public class Main {
 
         System.out.println("About to instantiate CPU");
 
-        pycpu cpu = new pycpu(usROM, osROM, usRAM, null );
+        PyCPU cpu = new PyCPU(usROM, osROM, usRAM, null );
 
         System.out.println("About to initialize CPU");
 
