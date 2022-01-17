@@ -12,12 +12,19 @@ public class OsROM implements i_pybus {
     private short RomBaseAddress = 0;
     private static final short RomSize = 0x1000;
     private short[] RomData;
+    private String RomFile;
 
-    public OsROM (short romBaseAddress) {
+    public OsROM (short romBaseAddress, String romFileName) {
         RomBaseAddress = romBaseAddress;
         RomData = new short[RomSize];
+        RomFile = romFileName;
     }
 
+    public OsROM (short romBaseAddress ) {
+        RomBaseAddress = romBaseAddress;
+        RomData = new short[RomSize];
+        RomFile = "osrom.dat";
+    }
     @Override
     public int getSize ()
     {
@@ -55,7 +62,7 @@ public class OsROM implements i_pybus {
         try
         {
             // create reader
-            FileInputStream fis = new FileInputStream(new File("osrom.dat"));
+            FileInputStream fis = new FileInputStream(new File(RomFile));
             BufferedInputStream reader = new BufferedInputStream(fis);
 
             // read a byte at a time

@@ -198,10 +198,10 @@ public class PyCPU
                 instruction_copy(source, dest, signed, modPos);
                 break;
             case INST_SET:
-                instruction_set(source, dest, signed, modPos);
+                instruction_set(dest, modPos);
                 break;
             case INST_INCDEC:
-                instruction_incdec(source, dest, signed, modPos);
+                instruction_incdec(source, signed, modPos);
                 break;
             case INST_ADDSUB:
                 instruction_addsub(source, dest, signed, modPos);
@@ -210,16 +210,16 @@ public class PyCPU
                 instruction_muldiv(source, dest, signed, modPos);
                 break;
             case INST_ANDOR:
-                instruction_andor(source, dest, signed, modPos);
+                instruction_andor(source, dest, modPos);
                 break;
             case INST_NOTNEG:
-                instruction_notneg(source, dest, signed, modPos);
+                instruction_notneg(source, modPos);
                 break;
             case INST_SHIFT:
-                instruction_shift(source, dest, signed, modPos);
+                instruction_shift(source, modPos);
                 break;
             case INST_SETVAL:
-                instruction_setval(source, dest, signed, modPos);
+                instruction_setval(dest);
                 break;
             case INST_STACK:
                 instruction_stack(source, dest, signed, modPos);
@@ -296,7 +296,7 @@ public class PyCPU
 
     }
 
-    private void instruction_set(byte source, byte dest,  boolean signed, boolean modPos)
+    private void instruction_set (byte dest, boolean modPos)
     {
         if ( modPos )
         {
@@ -309,7 +309,7 @@ public class PyCPU
         }
     }
 
-    private void instruction_incdec(byte source, byte dest, boolean signed, boolean modPos)
+    private void instruction_incdec (byte source, boolean signed, boolean modPos)
     {
         // This is an ALU operation, clear the flags register of ALU flags.
         RegFlags &= 0xFFF0;
@@ -512,7 +512,7 @@ public class PyCPU
         }
     }
 
-    private void instruction_andor(byte source, byte source_two, boolean signed, boolean modPos)
+    private void instruction_andor (byte source, byte source_two, boolean modPos)
     {
         int tmpVal;
 
@@ -548,7 +548,7 @@ public class PyCPU
         RegALU = (short)tmpVal;
     }
 
-    private void instruction_notneg(byte source, byte dest, boolean signed, boolean modPos)
+    private void instruction_notneg (byte source, boolean modPos)
     {
         int tmpVal;
 
@@ -582,7 +582,7 @@ public class PyCPU
         RegALU = (short)tmpVal;
     }
 
-    private void instruction_shift(byte source, byte dest, boolean signed, boolean modPos)
+    private void instruction_shift (byte source, boolean modPos)
     {
         int tmpVal;
 
@@ -616,7 +616,7 @@ public class PyCPU
         RegALU = (short)tmpVal;
     }
 
-    private void instruction_setval(byte source, byte dest, boolean signed, boolean modPos)
+    private void instruction_setval (byte dest)
     {
         loadNextInstruction(true);
         write_to_reg(dest, read_from_reg(REG_INST));
@@ -625,6 +625,22 @@ public class PyCPU
     // TODO Implement Stack Instruction
     private void instruction_stack(byte source, byte dest, boolean signed, boolean modPos)
     {
+        // Process for stack operation.
+        // Stack register points to the beginning of the stack
+        // Assembler keeps track of offset from stack beginning
+        // Stack is kept in OS Ram for OS operations and User RAM for User operation
+        //
+        // On call, with a pos mod, a 'function call' happens
+        //  1 : Current stack address is pushed to memory
+        //  2 : Next PC value is pushed to memory
+        //  3 : Stack address is updated to next address
+        //  4 : Value of GP1 is copied to PC (target of function call)
+        //  5 : Execution continues at location of new function
+        //
+        // On call, with a neg mod, a 'function return' happens
+        //  1 : Next PC value is popped from memory and written to PC Reg
+        //  2 : Previous stack address is pulled from memory and written to Stack Reg
+        //  3 : Execution continues at location of function return.
 
     }
 

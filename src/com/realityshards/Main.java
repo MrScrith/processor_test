@@ -1,18 +1,30 @@
 package com.realityshards;
 
-import com.realityshards.pycpu.OsROM;
-import com.realityshards.pycpu.RamBlock;
-import com.realityshards.pycpu.UserRom;
-import com.realityshards.pycpu.PyCPU;
+import com.realityshards.pycpu.*;
 
 public class Main {
 
     public static void main(String[] args) {
 	// write your code here
+        OsROM osROM;
+        UserRom usROM;
 
-        OsROM osROM = new OsROM((short)0x0000);
-        UserRom usROM = new UserRom((short)0x4000, 0x1000, "test1");
-        RamBlock usRAM = new RamBlock((short)0x8000, 0x1000);
+        CliArgs cliArgs = new CliArgs(args);
+
+        String OsRomName = cliArgs.switchValue("-osrom", "osrom.dat");
+
+        String UserRomName = cliArgs.switchValue("-usrrom", "userrom.dat");
+        int UserRomSize = cliArgs.switchIntValue("-uromsize", 0x1000);
+
+        int UserRamSize = cliArgs.switchIntValue("-uramsize", 0x1000);
+
+
+
+        osROM = new OsROM((short)0x0000, OsRomName);
+
+        usROM = new UserRom((short)0x4000, UserRomSize, UserRomName);
+
+        RamBlock usRAM = new RamBlock((short)0x8000, UserRamSize);
 
         System.out.println("About to instantiate CPU");
 
