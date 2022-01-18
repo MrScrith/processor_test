@@ -2,7 +2,7 @@ package com.realityshards.pycpu;
 
 
 import com.realityshards.pycpu.interfaces.i_pybus;
-import com.sun.istack.internal.Nullable;
+//import com.sun.istack.internal.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,8 +65,7 @@ public class PyCPU
 
     private i_pybus userRom;
     private i_pybus mainRom;
-    private i_pybus userRam;
-    private i_pybus mainRam;
+    private i_pybus ramBlock;
     private ArrayList<i_pybus> peripherals = new ArrayList<i_pybus>();
 
     private short RegJump;    // Jump Register (if jump instruction set this is the address to jump to).
@@ -79,12 +78,11 @@ public class PyCPU
     private short RegFlags;   // Flags Register
     private short[] RegGp = new short[5];    // 5 General Purpose Registers.
 
-    public PyCPU (i_pybus uRom, i_pybus mRom, i_pybus uRam, @Nullable i_pybus[] periphs)
+    public PyCPU (i_pybus uRom, i_pybus mRom, i_pybus uRam, i_pybus[] periphs)
     {
         userRom = uRom;
         mainRom = mRom;
-        userRam = uRam;
-        mainRam = new RamBlock((short)0x8000, 0x1000);
+        ramBlock = uRam;
         if ( periphs != null )
         {
             Collections.addAll(peripherals,periphs);
@@ -126,9 +124,9 @@ public class PyCPU
             retVal = false;
         }
 
-        if ( userRam != null)
+        if ( ramBlock != null)
         {
-            userRam.init((short)0x8000);
+            ramBlock.init((short)0x8000);
         }
         else
         {
@@ -653,11 +651,11 @@ public class PyCPU
                 break;
             case REG_MEMADD:
                 RegMemAdd = value;
-                //updateMemoryAddress(); // actions taken on update of value (like it would be in an actual CPU)
+                updateMemoryAddress(); // actions taken on update of value (like it would be in an actual CPU)
                 break;
             case REG_MEMDATA:
                 RegMemData = value;
-                //writeMemoryData(); // actions taken on update of value (like it would be in an actual CPU)
+                writeMemoryData(); // actions taken on update of value (like it would be in an actual CPU)
                 break;
             case REG_GP0:
                 RegGp[0] = value;
@@ -768,5 +766,32 @@ public class PyCPU
                 ", RegFlags=" + RegFlags +
                 ", RegGp=" + Arrays.toString(RegGp) +
                 '}';
+    }
+
+    private void updateMemoryAddress()
+    {
+        if ( RegMemAdd > ramBlock.getBaseAddress() &
+                RegMemAdd < (ramBlock.getBaseAddress() + ramBlock.getSize()) )
+        {
+            RegMemData = ramBlock.read_mem(RegMemAdd);
+        }
+        else
+        {
+            RegFlags |= FLAG_ERROR_BIT;
+        }
+    }
+
+    private void writeMemoryData()
+    {
+        if ( RegMemAdd > ramBlock.getBaseAddress() &
+                RegMemAdd < (ramBlock.getBaseAddress() + ramBlock.getSize()) )
+        {
+            ramBlock.write_mem(RegMemAdd, RegMemData);
+        }
+        else
+        {
+            RegFlags |= FLAG_ERROR_BIT;
+        }
+
     }
 }

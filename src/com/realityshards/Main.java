@@ -16,7 +16,7 @@ public class Main {
         String UserRomName = cliArgs.switchValue("-usrrom", "userrom.dat");
         int UserRomSize = cliArgs.switchIntValue("-uromsize", 0x1000);
 
-        int UserRamSize = cliArgs.switchIntValue("-uramsize", 0x1000);
+        int RamSize = cliArgs.switchIntValue("-uramsize", 0x1000);
 
 
 
@@ -24,11 +24,11 @@ public class Main {
 
         usROM = new UserRom((short)0x4000, UserRomSize, UserRomName);
 
-        RamBlock usRAM = new RamBlock((short)0x8000, UserRamSize);
+        RamBlock RAMBlock = new RamBlock((short)0x8000, RamSize);
 
         System.out.println("About to instantiate CPU");
 
-        PyCPU cpu = new PyCPU(usROM, osROM, usRAM, null );
+        PyCPU cpu = new PyCPU(usROM, osROM, RAMBlock, null );
 
         System.out.println("About to initialize CPU");
 

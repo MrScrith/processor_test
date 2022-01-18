@@ -16,8 +16,7 @@ Firmware sets base address of peripherals on startup, which is based on cable po
 Flags register is 'clear on read', it is also cleared at the start of an ALU operation for the last 4 bits.
 
 64k Address space:
-0x0000 - 0x0FFF : OS ROM is 4k
-0x1000 - 0x1FFF : OS RAM is 4k
+0x0000 - 0x0FFF : OS ROM is 8k
 0x2000 - 0x3FFF : Peripheral space is 8K
 0x4000 - 0x7FFF : User ROM is 16k, 1k to 16k can be utilized (based on item)
 0x8000 - 0xFFFF : User RAM is 32k, 1k to 32k can be utilized (based on item)

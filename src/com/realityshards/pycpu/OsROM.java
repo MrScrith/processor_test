@@ -10,7 +10,7 @@ import java.io.IOException;
 public class OsROM implements i_pybus {
 
     private short RomBaseAddress = 0;
-    private static final short RomSize = 0x1000;
+    private static final short RomSize = 0x2000;
     private short[] RomData;
     private String RomFile;
 
