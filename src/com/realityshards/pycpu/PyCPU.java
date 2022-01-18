@@ -189,6 +189,7 @@ public class PyCPU
         byte jump = (byte)((RegInst >> 1) & 0x7);
         boolean signed = ( (RegInst & 0x0010) == 0x0010);
         boolean modPos = ( (RegInst & 0x0001) == 0x0001);
+        boolean doJump = false;
 
         switch ( inst )
         {
@@ -221,10 +222,10 @@ public class PyCPU
                 break;
             case INST_STACK:
                 instruction_stack(source, dest, signed, modPos);
+                doJump = true;
                 break;
         }
 
-        boolean doJump = false;
 
         switch ( jump )
         {
@@ -625,20 +626,70 @@ public class PyCPU
     {
         // Process for stack operation.
         // Stack register points to the beginning of the stack
-        // Assembler keeps track of offset from stack beginning
-        // Stack is kept in OS Ram for OS operations and User RAM for User operation
+        // Beginning of the stack holds the next available address (aka, end of the stack)
+        //
         //
         // On call, with a pos mod, a 'function call' happens
-        //  1 : Current stack address is pushed to memory
-        //  2 : Next PC value is pushed to memory
-        //  3 : Stack address is updated to next address
-        //  4 : Value of GP1 is copied to PC (target of function call)
-        //  5 : Execution continues at location of new function
+        //  1 : Stack End is loaded into MemAddr
+        //  2 : Current stack address is pushed to memory, MemAddr incremented
+        //  3 : Next PC value is pushed to memory, MemAddr incremented
+        //  4 : Stack address is updated to current address, next memory address written to this address
+        //  5 : Value of GP1 is copied to PC (target of function call)
+        //  6 : Execution continues at location of new function
         //
         // On call, with a neg mod, a 'function return' happens
-        //  1 : Next PC value is popped from memory and written to PC Reg
+        //  1 : Next PC value is pulled from memory and written to PC Reg
         //  2 : Previous stack address is pulled from memory and written to Stack Reg
         //  3 : Execution continues at location of function return.
+
+        if ( modPos )
+        {
+            // Function call stack instruction
+
+            //  1 : Stack End is loaded into MemAddr
+            RegMemAdd = RegStack;
+            updateMemoryAddress();
+
+            //  2 : Current stack address is pushed to memory, MemAddr incremented
+            RegMemData = RegStack;
+            writeMemoryData();
+            RegMemAdd = (short)(RegMemAdd + 1);
+            updateMemoryAddress();
+
+            //  3 : Next PC value is pushed to memory, MemAddr incremented
+            RegMemData = (short)(RegPC + 1);
+            writeMemoryData();
+            RegMemAdd = (short)(RegMemAdd + 1);
+            updateMemoryAddress();
+
+            //  4 : Stack address is updated to current address, next memory address written to this address
+            RegStack = RegMemAdd;
+            RegMemData = (short)(RegMemAdd + 1);
+            writeMemoryData();
+
+            //  5 : Value of GP1 is copied to PC (target of function call)
+            // Easy way is to define this as a 'jump' instruction and perform the jump.
+            RegJump = RegGp[0];
+
+            //  6 : Execution continues at location of new function
+        }
+        else
+        {
+            // Function return stack instruction
+
+            //  1 : Next PC value is pulled from memory and written to PC Reg
+            // Next PC value is Stack Address - 1
+            RegMemAdd = (short)(RegStack - 1);
+            updateMemoryAddress();
+            RegJump = RegMemData; // put in Jump register and allow the jump action to handle it.
+
+            //  2 : Previous stack address is pulled from memory and written to Stack Reg
+            RegMemAdd = (short)(RegStack - 2);
+            updateMemoryAddress();
+            RegStack = RegMemData;
+
+            //  3 : Execution continues at location of function return.
+        }
 
     }
 
