@@ -223,6 +223,9 @@ public class PyCPU
             case INST_STACK:
                 instruction_stack(source, dest, signed, modPos);
                 doJump = true;
+                jump = JUMP_NONE;
+                // Set jump to None to ignore any jump instructions that might have
+                // accidentally been tacked on.
                 break;
         }
 
@@ -430,7 +433,7 @@ public class PyCPU
                 if ( tmpVal < Short.MIN_VALUE )
                 {
                     RegFlags |= FLAG_BORROW_BIT;
-                    tmpVal = Short.MAX_VALUE;
+                    tmpVal = Short.MAX_VALUE - (tmpVal + Short.MIN_VALUE);
                 }
 
             }
@@ -501,11 +504,15 @@ public class PyCPU
 
         RegALU = (short)tmpVal;
 
-        if ( RegALU < 0 )
+        if ( tmpVal > Short.MAX_VALUE )
+        {
+            RegFlags |= FLAG_CARRY_BIT;
+        }
+        else if ( tmpVal < 0 )
         {
             RegFlags |= FLAG_NEGATIVE_BIT;
         }
-        else if ( RegALU == 0 )
+        else if ( tmpVal == 0 )
         {
             RegFlags |= FLAG_ZERO_BIT;
         }
@@ -531,15 +538,7 @@ public class PyCPU
 
         }
 
-        if ( tmpVal > Short.MAX_VALUE )
-        {
-            RegFlags |= FLAG_CARRY_BIT;
-        }
-        else if ( tmpVal < 0 )
-        {
-            RegFlags |= FLAG_NEGATIVE_BIT;
-        }
-        else if ( tmpVal == 0 )
+        if ( tmpVal == 0 )
         {
             RegFlags |= FLAG_ZERO_BIT;
         }
@@ -565,15 +564,7 @@ public class PyCPU
 
         }
 
-        if ( tmpVal > Short.MAX_VALUE )
-        {
-            RegFlags |= FLAG_CARRY_BIT;
-        }
-        else if ( tmpVal < 0 )
-        {
-            RegFlags |= FLAG_NEGATIVE_BIT;
-        }
-        else if ( tmpVal == 0 )
+        if ( tmpVal == 0 )
         {
             RegFlags |= FLAG_ZERO_BIT;
         }
@@ -634,8 +625,7 @@ public class PyCPU
         //  2 : Current stack address is pushed to memory, MemAddr incremented
         //  3 : Next PC value is pushed to memory, MemAddr incremented
         //  4 : Stack address is updated to current address, next memory address written to this address
-        //  5 : Value of GP1 is copied to PC (target of function call)
-        //  6 : Execution continues at location of new function
+        //  5 : Execution continues at location of new function
         //
         // On call, with a neg mod, a 'function return' happens
         //  1 : Next PC value is pulled from memory and written to PC Reg
@@ -667,11 +657,7 @@ public class PyCPU
             RegMemData = (short)(RegMemAdd + 1);
             writeMemoryData();
 
-            //  5 : Value of GP1 is copied to PC (target of function call)
-            // Easy way is to define this as a 'jump' instruction and perform the jump.
-            RegJump = RegGp[0];
-
-            //  6 : Execution continues at location of new function
+            //  5 : Execution continues at location of new function
         }
         else
         {
