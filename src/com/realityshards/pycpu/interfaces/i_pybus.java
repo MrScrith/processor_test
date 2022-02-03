@@ -10,5 +10,5 @@ public interface i_pybus {
 
     boolean write_mem(short address, short value);
 
-    boolean init(short baseAddress);
+    boolean init();
 }

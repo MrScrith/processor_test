@@ -10,10 +10,10 @@ public class RamBlock implements i_pybus
     int Size;
     short[] RamData;
 
-    public RamBlock (short baseAddress, int size)
+    public RamBlock (int baseAddress, int size)
     {
         Size = size;
-        BaseAddress = baseAddress;
+        BaseAddress = (short)baseAddress;
         RamData = new short[Size];
     }
 
@@ -54,7 +54,7 @@ public class RamBlock implements i_pybus
     }
 
     @Override
-    public boolean init (short baseAddress)
+    public boolean init ()
     {
         Arrays.fill(RamData, (short)0);
         return true;
