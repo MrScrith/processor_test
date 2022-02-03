@@ -48,18 +48,18 @@ public class PyCPU
     private static final byte JUMP_JUMP = 0x7;
 
     // Definition of registers
-    private static final byte REG_JUMP = 0x0;
-    private static final byte REG_MEMADD = 0x1;
-    private static final byte REG_MEMDATA = 0x2;
-    private static final byte REG_GP0 = 0x3;
-    private static final byte REG_GP1 = 0x4;
-    private static final byte REG_GP2 = 0x5;
-    private static final byte REG_GP3 = 0x6;
-    private static final byte REG_GP4 = 0x7;
-    private static final byte REG_GP5 = 0x8;
-    private static final byte REG_GP6 = 0x9;
-    private static final byte REG_GP7 = 0xA;
-    private static final byte REG_INST = 0xB;
+    private static final byte REG_JUMP_OFFSET = 0x0;
+    private static final byte REG_JUMP = 0x1;
+    private static final byte REG_MEMADD = 0x2;
+    private static final byte REG_MEMDATA = 0x3;
+    private static final byte REG_GP0 = 0x4;
+    private static final byte REG_GP1 = 0x5;
+    private static final byte REG_GP2 = 0x6;
+    private static final byte REG_GP3 = 0x7;
+    private static final byte REG_GP4 = 0x8;
+    private static final byte REG_GP5 = 0x9;
+    private static final byte REG_GP6 = 0xA;
+    private static final byte REG_GP7 = 0xB;
     private static final byte REG_PC = 0xC;
     private static final byte REG_STACK = 0xD;
     private static final byte REG_ALU = 0xE;
@@ -82,14 +82,15 @@ public class PyCPU
     private final i_pybus ramBlock;
     private final ArrayList<i_pybus> peripherals = new ArrayList<i_pybus>();
 
-    private short RegJump;    // Jump Register (if jump instruction set this is the address to jump to).
-    private short RegMemAdd;  // Memory Address Register
-    private short RegMemData; // Memory Data Register (value to write to or read from memory)
-    private short RegInst;    // Instruction Register
-    private short RegPC;      // Program Counter Register
-    private short RegStack;   // Stack Pointer Register
-    private short RegALU;     // ALU Output Register
-    private short RegFlags;   // Flags Register
+    private short RegJump;       // Jump Register (if jump instruction set this is the address to jump to).
+    private short RegJumpOffset; // Jump Offset Register
+    private short RegMemAdd;     // Memory Address Register
+    private short RegMemData;    // Memory Data Register (value to write to or read from memory)
+    private short RegInst;       // Instruction Register
+    private short RegPC;         // Program Counter Register
+    private short RegStack;      // Stack Pointer Register
+    private short RegALU;        // ALU Output Register
+    private short RegFlags;      // Flags Register
     private final short[] RegGp = new short[8];    // 8 General Purpose Registers.
 
     public PyCPU (i_pybus uRom, i_pybus mRom, i_pybus uRam, i_pybus[] periphs)
@@ -110,6 +111,7 @@ public class PyCPU
         boolean retVal = true;
 
         RegJump = 0;
+        RegJumpOffset = 0;
         RegMemAdd = 0;
         RegMemData = 0;
         RegInst = 0;
@@ -334,7 +336,7 @@ public class PyCPU
         if ( doJump )
         {
             // Load the address to jump to.
-            RegPC = RegJump;
+            RegPC = (short)(RegJump + RegJumpOffset);
         }
 
         return !doJump;
@@ -710,7 +712,7 @@ public class PyCPU
     private void instruction_setval (byte dest)
     {
         loadNextInstruction(true);
-        write_to_reg(dest, read_from_reg(REG_INST));
+        write_to_reg(dest, RegInst);
     }
 
     private void instruction_fnc()
@@ -786,6 +788,9 @@ public class PyCPU
     {
         switch ( dest )
         {
+            case REG_JUMP_OFFSET:
+                RegJumpOffset = value;
+                break;
             case REG_JUMP:
                 RegJump = value;
                 break;
@@ -830,6 +835,9 @@ public class PyCPU
         short value = 0;
         switch ( source )
         {
+            case REG_JUMP_OFFSET:
+                value = RegJumpOffset;
+                break;
             case REG_JUMP:
                 value = RegJump;
                 break;
@@ -862,9 +870,6 @@ public class PyCPU
                 break;
             case REG_GP7:
                 value = RegGp[7];
-                break;
-            case REG_INST:
-                value = RegInst;
                 break;
             case REG_PC:
                 value = RegPC;
