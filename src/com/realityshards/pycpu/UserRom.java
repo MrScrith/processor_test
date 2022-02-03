@@ -13,9 +13,9 @@ public class UserRom implements i_pybus
     private final String Name;
 
 
-    public UserRom (short baseAddress, int size, String name)
+    public UserRom (int baseAddress, int size, String name)
     {
-        BaseAddress = baseAddress;
+        BaseAddress = (short)baseAddress;
         Size = size;
         RomData = new short[Size];
         Name = name;
@@ -58,10 +58,8 @@ public class UserRom implements i_pybus
     }
 
     @Override
-    public boolean init (short baseAddress)
+    public boolean init ()
     {
-        BaseAddress = baseAddress;
-
         boolean retVal = false;
 
         File datFile = new File(Name + ".dat");

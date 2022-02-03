@@ -14,8 +14,8 @@ public class OsROM implements i_pybus {
     private short[] RomData;
     private String RomFile;
 
-    public OsROM (short romBaseAddress, String romFileName) {
-        RomBaseAddress = romBaseAddress;
+    public OsROM (int romBaseAddress, String romFileName) {
+        RomBaseAddress = (short)romBaseAddress;
         RomData = new short[RomSize];
         RomFile = romFileName;
     }
@@ -40,7 +40,6 @@ public class OsROM implements i_pybus {
     public short read_mem(short address) {
         int val = 0;
 
-
         if ( address >= RomBaseAddress & address < (RomBaseAddress + RomSize ) )
         {
             val = address - RomBaseAddress;
@@ -54,8 +53,7 @@ public class OsROM implements i_pybus {
     }
 
     @Override
-    public boolean init(short baseAddress) {
-        RomBaseAddress = baseAddress;
+    public boolean init() {
 
         String curDir = System.getProperty("user.dir");
         System.out.println("The current working directory is: " + curDir);
