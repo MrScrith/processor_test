@@ -4,11 +4,11 @@ public interface i_pybus {
 
     int getSize ();
 
-    short getBaseAddress();
+    char getBaseAddress();
 
-    short read_mem(short address);
+    char read_mem(char address);
 
-    boolean write_mem(short address, short value);
+    boolean write_mem(char address, char value);
 
     boolean init();
 }

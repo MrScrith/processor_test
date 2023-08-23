@@ -6,15 +6,15 @@ import java.util.Arrays;
 
 public class RamBlock implements i_pybus
 {
-    short BaseAddress = 0;
+    char BaseAddress = 0;
     int Size;
-    short[] RamData;
+    char[] RamData;
 
     public RamBlock (int baseAddress, int size)
     {
         Size = size;
-        BaseAddress = (short)baseAddress;
-        RamData = new short[Size];
+        BaseAddress = (char)baseAddress;
+        RamData = new char[Size];
     }
 
     @Override
@@ -24,13 +24,13 @@ public class RamBlock implements i_pybus
     }
 
     @Override
-    public short getBaseAddress ()
+    public char getBaseAddress ()
     {
         return BaseAddress;
     }
 
     @Override
-    public short read_mem (short address)
+    public char read_mem (char address)
     {
         int val = 0;
 
@@ -41,7 +41,7 @@ public class RamBlock implements i_pybus
     }
 
     @Override
-    public boolean write_mem (short address, short value)
+    public boolean write_mem (char address, char value)
     {
         boolean retVal = false;
 
@@ -56,7 +56,7 @@ public class RamBlock implements i_pybus
     @Override
     public boolean init ()
     {
-        Arrays.fill(RamData, (short)0);
+        Arrays.fill(RamData, (char)0);
         return true;
     }
 }

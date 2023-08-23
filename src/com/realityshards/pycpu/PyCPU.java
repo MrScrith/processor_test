@@ -2,8 +2,8 @@ package com.realityshards.pycpu;
 
 
 import com.realityshards.pycpu.interfaces.i_pybus;
-//import com.sun.istack.internal.Nullable;
 
+import com.realityshards.pycpu.utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -68,30 +68,36 @@ public class PyCPU
     // These flags are set in the flag register on ALU operations
     // These values should be publicly available to make it easier to test for them
     // being set by an operation.
-    public static final short FLAG_CARRY_BIT    = 0x0001;
-    public static final short FLAG_BORROW_BIT   = 0x0002;
-    public static final short FLAG_ZERO_BIT     = 0x0004;
-    public static final short FLAG_NEGATIVE_BIT = 0x0008;
-    public static final short FLAG_RESET_BIT    = (short)0x8000;
-    public static final short FLAG_ERROR_BIT    = 0x4000;
+    public static final char FLAG_CARRY_BIT    = 0x0001;
+    public static final char FLAG_BORROW_BIT   = 0x0002;
+    public static final char FLAG_ZERO_BIT     = 0x0004;
+    public static final char FLAG_NEGATIVE_BIT = 0x0008;
+    public static final char FLAG_RESET_BIT    = 0x8000;
+    public static final char FLAG_ERROR_BIT    = 0x4000;
 
-    public static final int SHORT_UNSIGNED_MAX = 65535;
+    public static final char FLAG_SYSTEM_MASK = FLAG_RESET_BIT | FLAG_ERROR_BIT;
+
+    public static final char FLAG_ALU_MASK = FLAG_CARRY_BIT | FLAG_BORROW_BIT | FLAG_ZERO_BIT | FLAG_NEGATIVE_BIT;
+
+    public static final int CHAR_UNSIGNED_MAX = 65535;
+    public static final int CHAR_SIGNED_MAX = 32767;
+    public static final int CHAR_SIGNED_MIN = -32768;
 
     private final i_pybus userRom;
     private final i_pybus mainRom;
     private final i_pybus ramBlock;
     private final ArrayList<i_pybus> peripherals = new ArrayList<i_pybus>();
 
-    private short RegJump;       // Jump Register (if jump instruction set this is the address to jump to).
-    private short RegJumpOffset; // Jump Offset Register
-    private short RegMemAdd;     // Memory Address Register
-    private short RegMemData;    // Memory Data Register (value to write to or read from memory)
-    private short RegInst;       // Instruction Register
-    private short RegPC;         // Program Counter Register
-    private short RegStack;      // Stack Pointer Register
-    private short RegALU;        // ALU Output Register
-    private short RegFlags;      // Flags Register
-    private final short[] RegGp = new short[8];    // 8 General Purpose Registers.
+    private char RegJump;       // Jump Register (if jump instruction set this is the address to jump to).
+    private char RegJumpOffset; // Jump Offset Register
+    private char RegMemAdd;     // Memory Address Register
+    private char RegMemData;    // Memory Data Register (value to write to or read from memory)
+    private char RegInst;       // Instruction Register
+    private char RegPC;         // Program Counter Register
+    private char RegStack;      // Stack Pointer Register
+    private char RegALU;        // ALU Output Register
+    private char RegFlags;      // Flags Register
+    private final char[] RegGp = new char[8];    // 8 General Purpose Registers.
 
     public PyCPU (i_pybus uRom, i_pybus mRom, i_pybus uRam, i_pybus[] periphs)
     {
@@ -117,7 +123,7 @@ public class PyCPU
         RegInst = 0;
         RegALU = 0;
         RegFlags = 0;
-        Arrays.fill(RegGp,(short)0);
+        Arrays.fill(RegGp,(char)0);
 
         // Init RAM and ROMs
         mainRom.init();
@@ -336,7 +342,7 @@ public class PyCPU
         if ( doJump )
         {
             // Load the address to jump to.
-            RegPC = (short)(RegJump + RegJumpOffset);
+            RegPC = (char)(RegJump + RegJumpOffset);
         }
 
         return !doJump;
@@ -349,7 +355,7 @@ public class PyCPU
 
     private void instruction_set (byte dest, int value)
     {
-        write_to_reg(dest,(short)value);
+        write_to_reg(dest,(char)value);
 
         if ( value == 0 )
         {
@@ -364,19 +370,19 @@ public class PyCPU
     private void instruction_inc (byte source, boolean signed)
     {
         // This is an ALU operation, clear the flags register of ALU flags.
-        RegFlags &= 0xFFF0;
+        RegFlags = (char)(RegFlags ^ FLAG_ALU_MASK);
 
         if ( signed )
         {
-            int tmpVal = read_from_reg(source) + 1;
+            int tmpVal = utils.signed_char_to_int(read_from_reg(source)) + 1;
 
             if ( tmpVal == 0 )
             {
                 RegFlags |= FLAG_ZERO_BIT;
             }
-            else if ( tmpVal > Short.MAX_VALUE )
+            else if ( tmpVal > CHAR_SIGNED_MAX )
             {
-                tmpVal = Short.MIN_VALUE;
+                tmpVal = CHAR_SIGNED_MIN + (tmpVal - CHAR_SIGNED_MAX);
                 RegFlags |= FLAG_CARRY_BIT | FLAG_NEGATIVE_BIT;
             }
             else if ( tmpVal < 0 )
@@ -384,60 +390,62 @@ public class PyCPU
                 RegFlags |= FLAG_NEGATIVE_BIT;
             }
 
-            RegALU = (short)tmpVal;
+            RegALU = utils.signed_int_to_char(tmpVal);
 
         }
         else
         {
-            int val = Short.toUnsignedInt(read_from_reg(source));
+            int val = read_from_reg(source);
             val += 1;
-            if ( val > SHORT_UNSIGNED_MAX)
+            if ( val > CHAR_UNSIGNED_MAX)
             {
                 val = 0;
                 RegFlags |= FLAG_CARRY_BIT | FLAG_ZERO_BIT;
             }
 
-            RegALU = (short)val;
+            RegALU = (char)val;
         }
     }
 
     private void instruction_dec (byte source, boolean signed)
     {
         // This is an ALU operation, clear the flags register of ALU flags.
-        RegFlags &= 0xFFF0;
+        RegFlags = (char)(RegFlags ^ FLAG_ALU_MASK);
 
         if ( signed )
         {
-            int tmpVal = read_from_reg(source) - 1;
+            int tmpVal = utils.signed_char_to_int(read_from_reg(source)) - 1;
 
             if ( tmpVal == 0 )
             {
                 RegFlags |= FLAG_ZERO_BIT;
             }
-            else if ( tmpVal > Short.MAX_VALUE )
+            else if ( tmpVal < CHAR_SIGNED_MIN )
             {
-                tmpVal = Short.MIN_VALUE;
-                RegFlags |= FLAG_CARRY_BIT | FLAG_NEGATIVE_BIT;
+                tmpVal = CHAR_SIGNED_MAX;
+                RegFlags |= FLAG_CARRY_BIT;
             }
             else if ( tmpVal < 0 )
             {
                 RegFlags |= FLAG_NEGATIVE_BIT;
             }
 
-            RegALU = (short)tmpVal;
+            RegALU = utils.signed_int_to_char(tmpVal);
 
         }
         else
         {
-            int val = Short.toUnsignedInt(read_from_reg(source));
+            int val = (int)read_from_reg(source);
             val -= 1;
-            if ( val > SHORT_UNSIGNED_MAX)
+            if ( val < 0)
             {
-                val = 0;
-                RegFlags |= FLAG_CARRY_BIT | FLAG_ZERO_BIT;
+                val = CHAR_UNSIGNED_MAX;
+                RegFlags |= FLAG_CARRY_BIT;
+            } else if ( val == 0 ) {
+                RegFlags |= FLAG_ZERO_BIT;
             }
 
-            RegALU = (short)val;
+            RegALU = (char)val;
         }
     }
 
@@ -446,13 +454,14 @@ public class PyCPU
         int tmpVal;
 
         // This is an ALU operation, clear the flags register of ALU flags.
-        RegFlags &= 0xFFF0;
+        RegFlags = (char)(RegFlags ^ FLAG_ALU_MASK);
 
         if ( signed )
         {
-            tmpVal = read_from_reg(source) + read_from_reg(source_two);
+            tmpVal = utils.signed_char_to_int(read_from_reg(source));
+            tmpVal = tmpVal + utils.signed_char_to_int(read_from_reg(source_two));
 
-            if ( tmpVal > Short.MAX_VALUE )
+            if ( tmpVal > CHAR_UNSIGNED_MAX )
             {
                 RegFlags |= FLAG_CARRY_BIT;
             }
@@ -460,17 +469,17 @@ public class PyCPU
         }
         else
         {
-            tmpVal = Short.toUnsignedInt(read_from_reg(source));
-            tmpVal += Short.toUnsignedInt(read_from_reg(source_two));
-            if ( tmpVal > SHORT_UNSIGNED_MAX )
+            tmpVal = read_from_reg(source);
+            tmpVal += read_from_reg(source_two);
+            if ( tmpVal > CHAR_UNSIGNED_MAX )
             {
-                tmpVal = 0;
+                tmpVal = tmpVal - CHAR_UNSIGNED_MAX;
                 RegFlags |= FLAG_CARRY_BIT;
             }
         }
 
 
-        RegALU = (short)tmpVal;
+        RegALU = (char)tmpVal;
 
         if ( RegALU < 0 )
         {
@@ -489,41 +498,40 @@ public class PyCPU
         int tmpVal;
 
         // This is an ALU operation, clear the flags register of ALU flags.
-        RegFlags &= 0xFFF0;
+        RegFlags = (char)(RegFlags ^ FLAG_ALU_MASK);
 
         if ( signed )
         {
-            tmpVal = read_from_reg(source) + read_from_reg(source_two);
+            tmpVal = utils.signed_char_to_int(read_from_reg(source));
+            tmpVal = tmpVal - utils.signed_char_to_int(read_from_reg(source_two));
 
-            if ( tmpVal > Short.MAX_VALUE )
+            if ( tmpVal < CHAR_SIGNED_MIN )
             {
+                tmpVal = tmpVal + CHAR_SIGNED_MAX;
                 RegFlags |= FLAG_CARRY_BIT;
             }
-
         }
         else
         {
-            tmpVal = Short.toUnsignedInt(read_from_reg(source));
-            tmpVal += Short.toUnsignedInt(read_from_reg(source_two));
-            if ( tmpVal > SHORT_UNSIGNED_MAX )
+            tmpVal = read_from_reg(source);
+            tmpVal -= read_from_reg(source_two);
+            if ( tmpVal < 0 )
             {
-                tmpVal = 0;
+                tmpVal = tmpVal - CHAR_UNSIGNED_MAX;
                 RegFlags |= FLAG_CARRY_BIT;
             }
         }
 
-
-        RegALU = (short)tmpVal;
-
-        if ( RegALU < 0 )
+        if ( tmpVal < 0 )
         {
             RegFlags |= FLAG_NEGATIVE_BIT;
         }
-        else if ( RegALU == 0 )
+        else if ( tmpVal == 0 )
         {
             RegFlags |= FLAG_ZERO_BIT;
         }
 
+        RegALU = (char)tmpVal;
     }
 
     private void instruction_mul(byte source, byte source_two, boolean signed)
@@ -531,33 +539,33 @@ public class PyCPU
         int tmpVal;
 
         // This is an ALU operation, clear the flags register of ALU flags.
-        RegFlags &= 0xFFF0;
+        RegFlags = (char)(RegFlags ^ FLAG_ALU_MASK);
 
         if ( signed )
         {
             tmpVal = read_from_reg(source) * read_from_reg(source_two);
 
-            if ( tmpVal > Short.MAX_VALUE )
+            if ( tmpVal > CHAR_SIGNED_MAX )
             {
                 RegFlags |= FLAG_CARRY_BIT;
             }
 
+            RegALU = utils.signed_int_to_char(tmpVal);
         }
         else
         {
-            tmpVal = Short.toUnsignedInt(read_from_reg(source));
-            tmpVal = tmpVal * Short.toUnsignedInt(read_from_reg(source_two));
-            if ( tmpVal > SHORT_UNSIGNED_MAX )
+            tmpVal = read_from_reg(source);
+            tmpVal = tmpVal * read_from_reg(source_two);
+            if ( tmpVal > CHAR_UNSIGNED_MAX )
             {
                 tmpVal = 0;
                 RegFlags |= FLAG_CARRY_BIT;
             }
+
+            RegALU = (char)tmpVal;
         }
 
-
-        RegALU = (short)tmpVal;
-
-        if ( tmpVal > Short.MAX_VALUE )
+        if ( tmpVal > CHAR_SIGNED_MAX )
         {
             RegFlags |= FLAG_CARRY_BIT;
         }
@@ -577,31 +585,39 @@ public class PyCPU
         int tmpVal;
 
         // This is an ALU operation, clear the flags register of ALU flags.
-        RegFlags &= 0xFFF0;
+        RegFlags = (char)(RegFlags ^ FLAG_ALU_MASK);
 
 
         if ( signed )
         {
-            tmpVal = read_from_reg(source) / read_from_reg(source_two);
-
+            tmpVal = utils.signed_char_to_int(read_from_reg(source));
+            tmpVal = tmpVal / utils.signed_char_to_int(read_from_reg(source_two));
+            if ( tmpVal < CHAR_SIGNED_MIN )
+            {
+                tmpVal = tmpVal + CHAR_SIGNED_MAX;
+                RegFlags |= FLAG_BORROW_BIT;
+            }
+            else if ( tmpVal < 0 )
+            {
+                RegFlags |= FLAG_NEGATIVE_BIT;
+            }
+            RegALU = utils.signed_int_to_char(tmpVal);
         }
         else
         {
-            tmpVal = Short.toUnsignedInt(read_from_reg(source));
-            tmpVal = tmpVal /  Short.toUnsignedInt(read_from_reg(source_two));
+            tmpVal = read_from_reg(source);
+            tmpVal = Integer.divideUnsigned(tmpVal, read_from_reg(source_two));
+
+            if ( tmpVal < 0 )
+            {
+                tmpVal = tmpVal + CHAR_UNSIGNED_MAX;
+                RegFlags |= FLAG_BORROW_BIT;
+            }
+            RegALU = (char)tmpVal;
         }
 
-        RegALU = (short)tmpVal;
-
-        if ( tmpVal > Short.MAX_VALUE )
-        {
-            RegFlags |= FLAG_CARRY_BIT;
-        }
-        else if ( tmpVal < 0 )
-        {
-            RegFlags |= FLAG_NEGATIVE_BIT;
-        }
-        else if ( tmpVal == 0 )
+        // Common to both Signed and Unsigned
+        if ( tmpVal == 0 )
         {
             RegFlags |= FLAG_ZERO_BIT;
         }
@@ -612,7 +628,7 @@ public class PyCPU
         int tmpVal;
 
         // This is an ALU operation, clear the flags register of ALU flags.
-        RegFlags &= 0xFFF0;
+        RegFlags = (char)(RegFlags ^ FLAG_ALU_MASK);
 
         tmpVal = read_from_reg(source) & read_from_reg(source_two);
 
@@ -621,7 +637,7 @@ public class PyCPU
             RegFlags |= FLAG_ZERO_BIT;
         }
 
-        RegALU = (short)tmpVal;
+        RegALU = (char)tmpVal;
     }
 
     private void instruction_or (byte source, byte source_two)
@@ -629,7 +645,7 @@ public class PyCPU
         int tmpVal;
 
         // This is an ALU operation, clear the flags register of ALU flags.
-        RegFlags &= 0xFFF0;
+        RegFlags = (char)(RegFlags ^ FLAG_ALU_MASK);
 
         tmpVal = read_from_reg(source) | read_from_reg(source_two);
 
@@ -638,7 +654,7 @@ public class PyCPU
             RegFlags |= FLAG_ZERO_BIT;
         }
 
-        RegALU = (short)tmpVal;
+        RegALU = (char)tmpVal;
     }
 
     private void instruction_not (byte source)
@@ -646,16 +662,16 @@ public class PyCPU
         int tmpVal;
 
         // This is an ALU operation, clear the flags register of ALU flags.
-        RegFlags &= 0xFFF0;
+        RegFlags = (char)(RegFlags ^ FLAG_ALU_MASK);
 
-        tmpVal = read_from_reg(source) ^ SHORT_UNSIGNED_MAX;
+        tmpVal = read_from_reg(source) ^ CHAR_UNSIGNED_MAX;
 
         if ( tmpVal == 0 )
         {
             RegFlags |= FLAG_ZERO_BIT;
         }
 
-        RegALU = (short)tmpVal;
+        RegALU = (char)tmpVal;
     }
 
     private void instruction_neg (byte source)
@@ -663,16 +679,20 @@ public class PyCPU
         int tmpVal;
 
         // This is an ALU operation, clear the flags register of ALU flags.
-        RegFlags &= 0xFFF0;
+        RegFlags = (char)(RegFlags ^ FLAG_ALU_MASK);
 
-        tmpVal = -read_from_reg(source);
+        tmpVal = -utils.signed_char_to_int(read_from_reg(source));
 
         if ( tmpVal == 0 )
         {
             RegFlags |= FLAG_ZERO_BIT;
         }
+        else if ( tmpVal < 0 )
+        {
+            RegFlags |= FLAG_NEGATIVE_BIT;
+        }
 
-        RegALU = (short)tmpVal;
+        RegALU = utils.signed_int_to_char(tmpVal);
     }
 
     private void instruction_bsl (byte source )
@@ -680,7 +700,7 @@ public class PyCPU
         int tmpVal;
 
         // This is an ALU operation, clear the flags register of ALU flags.
-        RegFlags &= 0xFFF0;
+        RegFlags = (char)(RegFlags ^ FLAG_ALU_MASK);
 
         tmpVal = read_from_reg(source) << 1;
 
@@ -689,7 +709,7 @@ public class PyCPU
             RegFlags |= FLAG_ZERO_BIT;
         }
 
-        RegALU = (short)tmpVal;
+        RegALU = (char)tmpVal;
     }
 
     private void instruction_bsr (byte source )
@@ -697,7 +717,7 @@ public class PyCPU
         int tmpVal;
 
         // This is an ALU operation, clear the flags register of ALU flags.
-        RegFlags &= 0xFFF0;
+        RegFlags = (char)(RegFlags ^ FLAG_ALU_MASK);
 
         tmpVal = read_from_reg(source) >> 1;
 
@@ -706,17 +726,20 @@ public class PyCPU
             RegFlags |= FLAG_ZERO_BIT;
         }
 
-        RegALU = (short)tmpVal;
+        RegALU = (char)tmpVal;
     }
 
     private void instruction_setval (byte dest)
     {
+        // This is not an ALU operation, flags register is not cleared or set.
         loadNextInstruction(true);
         write_to_reg(dest, RegInst);
     }
 
     private void instruction_fnc()
     {
+        // This is not an ALU operation, flags register is not cleared or set.
+
         // Process for stack operation.
         // Stack register points to the beginning of the stack
         // Beginning of the stack holds the next available address (aka, end of the stack)
@@ -734,31 +757,27 @@ public class PyCPU
         // Function call stack instruction
 
         //  1 : Stack End is loaded into MemAddr
-        RegMemAdd = RegStack;
-        updateMemoryAddress();
+        write_to_reg(REG_MEMADD,read_from_reg(REG_STACK));
 
         //  2 : Current stack address is pushed to memory, MemAddr incremented
-        RegMemData = RegStack;
-        writeMemoryData();
-        RegMemAdd = (short)(RegMemAdd + 1);
-        updateMemoryAddress();
+        write_to_reg(REG_MEMDATA, read_from_reg(REG_STACK));
+        write_to_reg(REG_MEMADD, (char)(read_from_reg(REG_MEMADD) + 1));
 
         //  3 : Next PC value is pushed to memory, MemAddr incremented
-        RegMemData = (short)(RegPC + 1);
-        writeMemoryData();
-        RegMemAdd = (short)(RegMemAdd + 1);
-        updateMemoryAddress();
+        write_to_reg(REG_MEMDATA, (char)(read_from_reg(REG_PC) + 1));
+        write_to_reg(REG_MEMADD, (char)(read_from_reg(REG_MEMADD) + 1));
 
         //  4 : Stack address is updated to current address, next memory address written to this address
-        RegStack = RegMemAdd;
-        RegMemData = (short)(RegMemAdd + 1);
-        writeMemoryData();
+        write_to_reg(REG_STACK, read_from_reg(REG_MEMADD));
+        write_to_reg(REG_MEMDATA, (char)(read_from_reg(REG_MEMADD) + 1));
 
         //  5 : Execution continues at location of new function
     }
 
     private void instruction_fnr()
     {
+        // This is not an ALU operation, flags register is not cleared or set.
+
         // Process for stack operation.
         // Stack register points to the beginning of the stack
         // Beginning of the stack holds the next available address (aka, end of the stack)
@@ -772,19 +791,18 @@ public class PyCPU
 
         //  1 : Next PC value is pulled from memory and written to PC Reg
         // Next PC value is Stack Address - 1
-        RegMemAdd = (short)(RegStack - 1);
-        updateMemoryAddress();
-        RegJump = RegMemData; // put in Jump register and allow the jump action to handle it.
+        write_to_reg(REG_MEMADD, (char)(read_from_reg(REG_STACK ) - 1));
+        // put in Jump register and allow the jump action to handle it.
+        write_to_reg(REG_JUMP, read_from_reg(REG_MEMDATA));
 
         //  2 : Previous stack address is pulled from memory and written to Stack Reg
-        RegMemAdd = (short)(RegStack - 2);
-        updateMemoryAddress();
-        RegStack = RegMemData;
+        write_to_reg(REG_MEMADD, (char)(read_from_reg(REG_STACK) - 2));
+        write_to_reg(REG_STACK, read_from_reg(REG_MEMDATA));
 
         //  3 : Execution continues at location of function return.
     }
 
-    private void write_to_reg(byte dest, short value)
+    private void write_to_reg(byte dest, char value)
     {
         switch ( dest )
         {
@@ -830,9 +848,9 @@ public class PyCPU
 
     }
 
-    private short read_from_reg(byte source)
+    private char read_from_reg(byte source)
     {
-        short value = 0;
+        char value = 0;
         switch ( source )
         {
             case REG_JUMP_OFFSET:
@@ -882,7 +900,8 @@ public class PyCPU
                 break;
             case REG_FLAGS:
                 value = RegFlags;
-                RegFlags = 0; // Flags register is 'clear on read'
+                // Systems flags are 'clear on read', ALU flags are cleared on ALU operation
+                RegFlags = (char)(RegFlags ^ FLAG_SYSTEM_MASK);
                 break;
 
         }
