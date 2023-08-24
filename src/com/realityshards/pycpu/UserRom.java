@@ -7,17 +7,17 @@ import java.io.*;
 public class UserRom implements i_pybus
 {
 
-    private short BaseAddress = 0;
+    private char BaseAddress = 0;
     private int Size = 0;
-    private final short[] RomData;
+    private final char[] RomData;
     private final String Name;
 
 
     public UserRom (int baseAddress, int size, String name)
     {
-        BaseAddress = (short)baseAddress;
+        BaseAddress = (char)baseAddress;
         Size = size;
-        RomData = new short[Size];
+        RomData = new char[Size];
         Name = name;
     }
 
@@ -28,24 +28,25 @@ public class UserRom implements i_pybus
     }
 
     @Override
-    public short getBaseAddress ()
+    public char getBaseAddress ()
     {
         return BaseAddress;
     }
 
     @Override
-    public short read_mem (short address)
+    public char read_mem (char address)
     {
         int val = 0;
 
-        if (address >= BaseAddress & address < (BaseAddress + Size)) {
+        if ( (BaseAddress + address) < (BaseAddress + Size ) )
+        {
             val = address - BaseAddress;
         }
         return RomData[val];
     }
 
     @Override
-    public boolean write_mem (short address, short value)
+    public boolean write_mem (char address, char value)
     {
         boolean retVal = false;
 
@@ -84,9 +85,9 @@ public class UserRom implements i_pybus
                     }
                     retVal = true;
                     // Little endian, so value 0x1234 is stored 3412
-                    short v1 = (short) (0x00FF & buff[1]);
-                    short v2 = (short) (0x00FF & buff[0]);
-                    short rval = (short) ((Short.toUnsignedInt(v1) << 8) | Short.toUnsignedInt(v2));
+                    char v1 = (char) (0x00FF & buff[1]);
+                    char v2 = (char) (0x00FF & buff[0]);
+                    char rval = (char) ((v1 << 8) | v2);
                     RomData[offset] = rval;
                     offset++;
                     if (offset > Size) {

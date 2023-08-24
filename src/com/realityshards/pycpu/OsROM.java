@@ -9,20 +9,20 @@ import java.io.IOException;
 
 public class OsROM implements i_pybus {
 
-    private short RomBaseAddress = 0;
-    private static final short RomSize = 0x2000;
-    private short[] RomData;
+    private char RomBaseAddress = 0;
+    private static final char RomSize = 0x2000;
+    private char[] RomData;
     private String RomFile;
 
     public OsROM (int romBaseAddress, String romFileName) {
-        RomBaseAddress = (short)romBaseAddress;
-        RomData = new short[RomSize];
+        RomBaseAddress = (char)romBaseAddress;
+        RomData = new char[RomSize];
         RomFile = romFileName;
     }
 
-    public OsROM (short romBaseAddress ) {
+    public OsROM (char romBaseAddress ) {
         RomBaseAddress = romBaseAddress;
-        RomData = new short[RomSize];
+        RomData = new char[RomSize];
         RomFile = "osrom.dat";
     }
     @Override
@@ -32,15 +32,15 @@ public class OsROM implements i_pybus {
     }
 
     @Override
-    public short getBaseAddress() {
+    public char getBaseAddress() {
         return RomBaseAddress;
     }
 
     @Override
-    public short read_mem(short address) {
+    public char read_mem(char address) {
         int val = 0;
 
-        if ( address >= RomBaseAddress & address < (RomBaseAddress + RomSize ) )
+        if ( (RomBaseAddress + address) < (RomBaseAddress + RomSize ) )
         {
             val = address - RomBaseAddress;
         }
@@ -48,7 +48,7 @@ public class OsROM implements i_pybus {
     }
 
     @Override
-    public boolean write_mem(short address, short value) {
+    public boolean write_mem(char address, char value) {
         return false;
     }
 
@@ -76,9 +76,9 @@ public class OsROM implements i_pybus {
                     // if we read less than 2 bytes than the dat file is corrupted.
                     break;
                 }
-                short v1 = (short) (0x00FF & buff[1]);
-                short v2 = (short) (0x00FF & buff[0]);
-                short rval = (short) (( Short.toUnsignedInt(v1) << 8 ) | Short.toUnsignedInt(v2));
+                char v1 = (char) (0x00FF & buff[1]);
+                char v2 = (char) (0x00FF & buff[0]);
+                char rval = (char) (( v1 << 8 ) | v2);
                 RomData[offset] = rval;
                 offset++;
                 if ( offset > RomSize)
