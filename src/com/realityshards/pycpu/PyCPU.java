@@ -21,6 +21,7 @@ public class PyCPU
     private static final byte INST_SHIFT = 0x7;
     private static final byte INST_SETVAL = 0x8;
     private static final byte INST_STACK = 0x9;
+    private static final byte INST_MODIFIER = 0x01;
 
     // Definition of jumps
     private static final byte JUMP_NONE = 0x0;
@@ -28,10 +29,9 @@ public class PyCPU
     private static final byte JUMP_EZ   = 0x2;
     private static final byte JUMP_GTEZ = 0x3;
     private static final byte JUMP_LTZ  = 0x4;
-    private static final byte JUMP_NZ   = 0x5;
-    private static final byte JUMP_LTEZ = 0x6;
+    private static final byte JUMP_LTEZ = 0x5;
+    private static final byte JUMP_NZ   = 0x6;
     private static final byte JUMP_JUMP = 0x7;
-
 
     // Definition of registers
     private static final byte REG_JUMP = 0x0;
@@ -49,6 +49,9 @@ public class PyCPU
     private static final byte REG_PC = 0x9;
     private static final byte REG_STACK = 0xA;
     private static final byte REG_ALU = 0xB;
+    private static final byte REG_UN0 = 0xC; // Unused
+    private static final byte REG_UN1 = 0xD; // Unused
+    private static final byte REG_UN2 = 0xE; // Unused
     private static final byte REG_FLAGS = 0xF;
 
     // These flags are set in the flag register on ALU operations
@@ -61,12 +64,14 @@ public class PyCPU
     public static final short FLAG_RESET_BIT    = (short)0x8000;
     public static final short FLAG_ERROR_BIT    = 0x4000;
 
+    public static final short STACK_START_LOCATION = (short)0x8000;
+
     public static final int SHORT_UNSIGNED_MAX = 65535;
 
     private i_pybus userRom;
     private i_pybus mainRom;
     private i_pybus ramBlock;
-    private ArrayList<i_pybus> peripherals = new ArrayList<i_pybus>();
+    private ArrayList<i_pybus> peripherals = new ArrayList<>();
 
     private short RegJump;    // Jump Register (if jump instruction set this is the address to jump to).
     private short RegMemAdd;  // Memory Address Register
@@ -100,7 +105,7 @@ public class PyCPU
         RegMemData = 0;
         RegInst = 0;
         RegPC = 0;
-        RegStack = 0;
+        RegStack = STACK_START_LOCATION;
         RegALU = 0;
         RegFlags = 0;
         Arrays.fill(RegGp,(short)0);
@@ -113,7 +118,6 @@ public class PyCPU
                 0x8000 - 0xFFFF : User RAM is 32k, 1k to 32k can be utilized (based on item)
          */
         mainRom.init((short)0x0000);
-        //mainRam.init((short)0x2000);
         if ( userRom != null)
         {
             userRom.init((short)0x4000);
@@ -161,7 +165,7 @@ public class PyCPU
         else
         {
             RegPC = 0;
-            RegStack = 0; // TODO Same as init, find where it starts.
+            RegStack = STACK_START_LOCATION;
             RegFlags |= FLAG_RESET_BIT;
         }
 
@@ -776,7 +780,7 @@ public class PyCPU
             // Code is in OS ROM space
             RegInst = mainRom.read_mem(RegPC);
         }
-        else if ( RegPC > 0x4000 & RegPC < 0x7FFF )
+        else if ( RegPC >= (short)0x4000 & RegPC < (short)0x8000 )
         {
             // Code is in User ROM space
             RegInst = userRom.read_mem(RegPC);

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="aeb74f70-00f7-405c-a677-95c84052d214" name="Changes" comment="Built up the CPU and structure around it to allow running the CPU from the CLI. Created a basic OSROM and quick User ROM to test some functionality.">
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/osrom.asm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/out/production/processor_test/com/realityshards/Main.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/out/production/processor_test/com/realityshards/pycpu/CliArgs.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/out/production/processor_test/com/realityshards/pycpu/OsROM.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/out/production/processor_test/com/realityshards/pycpu/PyCPU.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/out/production/processor_test/com/realityshards/pycpu/RamBlock.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/out/production/processor_test/com/realityshards/pycpu/UserRom.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/out/production/processor_test/com/realityshards/pycpu/devNotes.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/out/production/processor_test/com/realityshards/pycpu/interfaces/i_pybus.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/userrom.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/userrom1.asm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/osrom.dat" beforeDir="false" afterPath="$PROJECT_DIR$/osrom.dat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/realityshards/pycpu/PyCPU.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/realityshards/pycpu/PyCPU.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/realityshards/pycpu/UserRom.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/realityshards/pycpu/UserRom.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/realityshards/pycpu/devNotes.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/realityshards/pycpu/devNotes.txt" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="ProjectId" id="23O9mPUe2wWDMxqnxSpjKoD2lQe" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+  </component>
+  <component name="RunManager" selected="Application.AppMain">
+    <configuration name="AppMain" type="Application" factoryName="Application">
+      <option name="ALTERNATIVE_JRE_PATH" value="1.8" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="MAIN_CLASS_NAME" value="com.realityshards.Main" />
+      <module name="processor_test" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Unnamed" type="JarApplication" nameIsGenerated="true">
+      <option name="WORKING_DIRECTORY" value="C:\projects\processor_test" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Application.AppMain" />
+      <item itemvalue="JAR Application.Unnamed" />
+    </list>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="aeb74f70-00f7-405c-a677-95c84052d214" name="Changes" comment="" />
+      <created>1641594442181</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1641594442181</updated>
+    </task>
+    <task id="LOCAL-00001" summary="CLeanup and bit swapping, current test confirms working of general pipeline and of the add, copy, and set operations.&#10;&#10;Built assembler (python, another project/repo) which is also at 90% (variables not implemented) and will be using it to write test cases for the CPU to exercise all registers and all instructions.">
+      <created>1641832480877</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1641832480877</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Added command-line arguments to allow loading specific roms, and added a plan for the stack instruction.">
+      <created>1642447653057</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1642447653058</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Updated stack instruction to not use jump.">
+      <created>1643461399462</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1643461399462</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="CLeanup and bit swapping, current test confirms working of general pipeline and of the add, copy, and set operations.&#10;&#10;Built assembler (python, another project/repo) which is also at 90% (variables not implemented) and will be using it to write test cases for the CPU to exercise all registers and all instructions." />
+    <MESSAGE value="Added command-line arguments to allow loading specific roms, and added a plan for the stack instruction." />
+    <MESSAGE value="Updated stack instruction to not use jump." />
+    <MESSAGE value="Built up the CPU and structure around it to allow running the CPU from the CLI. Created a basic OSROM and quick User ROM to test some functionality." />
+    <option name="LAST_COMMIT_MESSAGE" value="Built up the CPU and structure around it to allow running the CPU from the CLI. Created a basic OSROM and quick User ROM to test some functionality." />
+  </component>
+</project>

@@ -7,10 +7,10 @@ import java.io.*;
 public class UserRom implements i_pybus
 {
 
-    private short BaseAddress = 0;
-    private int Size = 0;
+    private short BaseAddress;
+    private int Size;
     private final short[] RomData;
-    private final String Name;
+    private String Name;
 
 
     public UserRom (short baseAddress, int size, String name)
@@ -64,7 +64,7 @@ public class UserRom implements i_pybus
 
         boolean retVal = false;
 
-        File datFile = new File(Name + ".dat");
+        File datFile = new File(Name);
 
         if (datFile.exists()) {
             try {
@@ -78,7 +78,8 @@ public class UserRom implements i_pybus
 
                 System.out.printf("Number of bytes available: %d\n", reader.available());
 
-                while ((ch = reader.read(buff, 0, 2)) != -1) {
+                while ((ch = reader.read(buff, 0, 2)) != -1)
+                {
                     if (ch != 2) {
                         // if we read less than 2 bytes than the dat file is corrupted.
                         retVal = false;

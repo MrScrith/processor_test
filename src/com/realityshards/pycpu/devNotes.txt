@@ -16,42 +16,52 @@ Firmware sets base address of peripherals on startup, which is based on cable po
 Flags register is 'clear on read', it is also cleared at the start of an ALU operation for the last 4 bits.
 
 64k Address space:
-0x0000 - 0x0FFF : OS ROM is 8k
+0x0000 - 0x1FFF : OS ROM is 8k
 0x2000 - 0x3FFF : Peripheral space is 8K
 0x4000 - 0x7FFF : User ROM is 16k, 1k to 16k can be utilized (based on item)
 0x8000 - 0xFFFF : User RAM is 32k, 1k to 32k can be utilized (based on item)
 
 
 
-IIII SSSS DDDT JJJP
+IIII SSSS DDDD JJJM
 
 IIII == 4 bits of instruction bits, allows for 16 instructions
-P == positive/negative modifier for instructions
-DDD  Destination
+DDDD  Destination
 SSSS Source
 JJJ Jump instruction
-T == Signed/Unsigned operation
+M == Signed/Unsigned operation
 
-IIII - P |
-0000 - 1 | Set Dest to Source
-0000 - 0 | Set Dest to 0
-0001 - 1 | Set Dest to 1
-0001 - 0 | Set Dest to -1 (signed value)
-0010 - 1 | Increment Source and set to ALU Out register
-0010 - 0 | Decrement Source and set to ALU Out register
-0011 - 1 | Add Source to Dest and set to ALU Out register
-0011 - 0 | Subtract Source to Dest and set to ALU Out register
-0100 - 1 | Multiply Source with Dest and set to ALU Out register
-0100 - 0 | Divide Source with Dest and set to ALU Out register
-0101 - 1 | AND Source with Dest and set to ALU Out register
-0101 - 0 | OR Source with Dest and set to ALU Out register
-0110 - 1 | NOT Source with Dest and set to ALU Out register
-0110 - 0 | Negate Source with Dest and set to ALU Out register
-0111 - 1 | bit shift Source Left (<<) and set to ALU Out register
-0111 - 0 | bit shift Source Right (>>) and set to ALU Out register
-1000 - 1 | Set Destination to value in next 2 bytes
-1001 - 1 | Function Call (stack increment)
-1001 - 0 | Function Return (stack decrement)
+IIII - M | Type | Description 
+0000 - 0 | Other | Set Dest to Source
+0000 - 1 | Set | Set Dest to 0
+0001 - 0 | Set | Set Dest to 1
+0001 - 1 | Set | Set Dest to -1 (signed value)
+0010 - 0 | ALU | Increment Source and set to ALU Out register
+0010 - 1 | ALU | Increment Source and set to ALU Out register
+0011 - 0 | ALU | Decrement Source and set to ALU Out register
+0011 - 1 | ALU | Decrement Source and set to ALU Out register
+0100 - 0 | ALU | Add Source to Dest and set to ALU Out register
+0100 - 1 | ALU | Add Source to Dest and set to ALU Out register
+0101 - 0 | ALU | Subtract Source from Dest and set to ALU Out register
+0101 - 1 | ALU | Subtract Source from Dest and set to ALU Out register
+0110 - 0 | ALU | Multiply Source with Dest and set to ALU Out register
+0110 - 1 | ALU | Multiply Source with Dest and set to ALU Out register
+0111 - 0 | ALU | Divide Source with Dest and set to ALU Out register
+0111 - 1 | ALU | Divide Source with Dest and set to ALU Out register
+1000 - 0 | ALU | AND Source with Dest and set to ALU Out register
+1000 - 1 | ALU | OR Source with Dest and set to ALU Out register
+1001 - 0 | ALU | NOT Source with Dest and set to ALU Out register
+1001 - 1 | ALU | Negate Source with Dest and set to ALU Out register
+1010 - 0 | ALU | bit shift Source Left (<<) and set to ALU Out register
+1010 - 1 | ALU | bit shift Source Right (>>) and set to ALU Out register
+1011 - 0 | Set | Set Destination to value in next 2 bytes
+1100 - 0 | Other | Function Call (stack increment)
+1100 - 1 | Other | Function Return (stack decrement)
+
+ALU Operations are non-destructive, the result is stored in the ALU out register.
+SET Operations are distructive, the destination register is overwritten with the result.
+Other Operations are their own beasts and you will need to read the description to understand what they do.
+
 
 JJJ |
 000 | No Jump
@@ -63,27 +73,23 @@ JJJ |
 110 | if comp != 0 jump
 111 | jump
 
-NOTE: Read only registers are only available on the Source list, so they all require the 4th bit to access
-SSSS - R  |
- DDD - RW |
-0000 - RW | Jump Register (if jump instruction set this is the address to jump to).
-0001 - RW | Memory Address Register
-0010 - RW | Memory Data Register (value to write to or read from memory)
-0011 - RW | General Purpose registers
-0100 - RW | GP
-0101 - RW | GP
-0110 - RW | GP
-0111 - RW | General Purpose registers
-1000 - R  | Instruction Register
-1001 - R  | PC
-1010 - R  | Stack Register
-1011 - R  | ALU Output Register (Holds copy of last ALU operation result)
+Some registers are read only, those registers will set an error if you attempt to write to them and will refuse the operation.
 
-1100
-1101
-1110
-
-
+0000 - RW | Jump Offset Register (Used to calculate location of jump to allow binary mobility)
+0001 - RW | Jump Register (if jump instruction set this is the relative address to jump to).
+0010 - RW | Memory Address Register
+0011 - RW | Memory Data Register (value to write to or read from memory)
+0100 - RW | General Purpose register 0
+0101 - RW | GP 1
+0110 - RW | GP 2
+0111 - RW | GP 3
+1000 - RW | GP 4
+1001 - RW | GP 5
+1010 - RW | GP 6
+1011 - RW | GP 7
+1100 - R  | PC
+1101 - RW | Stack Register
+1110 - R  | ALU Output Register (Holds copy of last ALU operation result)
 1111 - R  | Flags register
 
 Flags:
