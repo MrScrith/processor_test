@@ -20,11 +20,11 @@ public class Main {
 
 
 
-        osROM = new OsROM((short)0x0000, OsRomName);
+        osROM = new OsROM(0x0000, OsRomName);
 
-        usROM = new UserRom((short)0x4000, UserRomSize, UserRomName);
+        usROM = new UserRom(0x4000, UserRomSize, UserRomName);
 
-        RamBlock RAMBlock = new RamBlock((short)0x8000, RamSize);
+        RamBlock RAMBlock = new RamBlock(0x8000, RamSize);
 
         System.out.println("About to instantiate CPU");
 
@@ -36,25 +36,27 @@ public class Main {
 
         System.out.println(cpu.toString());
 
-        System.out.println("CPU is initialized, now running 10 cycles");
+        System.out.println("CPU is initialized, now running 1 cycle");
 
-        cpu.cycle(10);
+        cpu.cycle(1);
         System.out.println(cpu.toString());
 
-        System.out.println("CPU is running 10 cycles");
+        System.out.println("CPU is running 1 cycle");
 
-        cpu.cycle(10);
+        cpu.cycle(1);
         System.out.println(cpu.toString());
 
-        System.out.println("CPU is running 10 cycles");
+        System.out.println("CPU is running 1 cycle");
 
-        cpu.cycle(10);
+        cpu.cycle(1);
         System.out.println(cpu.toString());
 
-        System.out.println("CPU is running 10 cycles");
+        System.out.println("CPU is running 1 cycle");
 
-        cpu.cycle(10);
+        cpu.cycle(1);
         System.out.println(cpu.toString());
+
+        System.out.println("CPU Done.");
 
     }
 }
